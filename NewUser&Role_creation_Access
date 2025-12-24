@@ -1,0 +1,97 @@
+Below is a clear, step-by-step Snowflake guide to create a new user, assign roles, and grant required privileges — written in a DBA / interview-ready way.
+________________________________________
+❄️ Snowflake: Create New User with Role & Privileges
+Prerequisite:
+You must be logged in as ACCOUNTADMIN or SECURITYADMIN
+________________________________________
+1️⃣ Create a Role (if not already exists)
+CREATE ROLE IF NOT EXISTS reporting_role;
+✔ Best Practice:
+Create roles first, then assign them to users.
+________________________________________
+2️⃣ Grant Privileges to the Role
+2.1 Warehouse Access
+GRANT USAGE ON WAREHOUSE compute_wh TO ROLE reporting_role;
+________________________________________
+2.2 Database Access
+GRANT USAGE ON DATABASE sales_db TO ROLE reporting_role;
+________________________________________
+2.3 Schema Access
+GRANT USAGE ON SCHEMA sales_db.public TO ROLE reporting_role;
+________________________________________
+2.4 Table Access
+GRANT SELECT ON ALL TABLES IN SCHEMA sales_db.public TO ROLE reporting_role;
+Future Tables (Important!)
+GRANT SELECT ON FUTURE TABLES IN SCHEMA sales_db.public TO ROLE reporting_role;
+________________________________________
+3️⃣ Create New User
+CREATE USER report_user
+  PASSWORD = 'Temp@123'
+  MUST_CHANGE_PASSWORD = TRUE
+  DEFAULT_ROLE = reporting_role
+  DEFAULT_WAREHOUSE = compute_wh
+  COMMENT = 'Reporting user';
+________________________________________
+4️⃣ Assign Role to User
+GRANT ROLE reporting_role TO USER report_user;
+________________________________________
+5️⃣ Grant Role Hierarchy (Optional but Best Practice)
+Allow SYSADMIN to manage this role:
+GRANT ROLE reporting_role TO ROLE SYSADMIN;
+________________________________________
+6️⃣ Verify User & Role Grants
+Check User
+SHOW USERS LIKE 'REPORT_USER';
+Check Role Grants
+SHOW GRANTS TO USER report_user;
+Check Role Privileges
+SHOW GRANTS TO ROLE reporting_role;
+________________________________________
+7️⃣ Example: Read-Only User (Interview Favorite)
+CREATE ROLE readonly_role;
+
+GRANT USAGE ON DATABASE prod_db TO ROLE readonly_role;
+GRANT USAGE ON SCHEMA prod_db.public TO ROLE readonly_role;
+GRANT SELECT ON ALL TABLES IN SCHEMA prod_db.public TO ROLE readonly_role;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA prod_db.public TO ROLE readonly_role;
+________________________________________
+8️⃣ Security Best Practices (Mention in Interview)
+✔ Never grant privileges directly to users
+✔ Use roles for access control
+✔ Use FUTURE GRANTS
+✔ Enforce password rotation
+✔ Prefer SSO / Key Pair Authentication
+________________________________________
+9️⃣ Common Interview Questions
+Q: Difference between USER and ROLE?
+✔ User = identity
+✔ Role = permissions
+Q: Can a user have multiple roles?
+✔ Yes
+Q: Why FUTURE GRANTS?
+✔ Automatically applies permissions to new objects
+________________________________________
+🔑 Production-Ready Example (One Script)
+CREATE ROLE analyst_role;
+
+GRANT USAGE ON WAREHOUSE compute_wh TO ROLE analyst_role;
+GRANT USAGE ON DATABASE analytics_db TO ROLE analyst_role;
+GRANT USAGE ON SCHEMA analytics_db.public TO ROLE analyst_role;
+GRANT SELECT ON ALL TABLES IN SCHEMA analytics_db.public TO ROLE analyst_role;
+GRANT SELECT ON FUTURE TABLES IN SCHEMA analytics_db.public TO ROLE analyst_role;
+
+CREATE USER analyst_user
+  PASSWORD='Temp@123'
+  MUST_CHANGE_PASSWORD=TRUE
+  DEFAULT_ROLE=analyst_role
+  DEFAULT_WAREHOUSE=compute_wh;
+
+GRANT ROLE analyst_role TO USER analyst_user;
+________________________________________
+If you want next, I can help with:
+1️⃣ Snowflake RBAC design
+2️⃣ Snowflake interview Q&A
+3️⃣ Snowflake real-time use cases
+4️⃣ User creation using SCIM / Azure AD
+5️⃣ Snowflake security best practices
+
