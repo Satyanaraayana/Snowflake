@@ -1,0 +1,27 @@
+How can you delete the duplicate records?
+
+Table orders has duplicate records based on order_id
+
+1️⃣ Create a clean table (remove duplicates)
+CREATE OR REPLACE TABLE orders_clean AS
+SELECT *
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY order_date DESC) AS rn
+    FROM orders
+)
+WHERE rn = 1;
+
+2️⃣ Swap tables
+ALTER TABLE orders SWAP WITH orders_clean;
+
+👉 What happens: orders now has clean data
+*****Note: Old data moves to orders_clean (backup)
+
+3️⃣ Drop backup (optional)
+DROP TABLE orders_clean;
+✅ Why Use SWAP?
+Very fast (metadata operation ⚡)
+No downtime
+Safe rollback (before dropping backup)
+No heavy DELETE operations
